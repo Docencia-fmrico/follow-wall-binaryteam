@@ -32,6 +32,7 @@ public:
     RCLCPP_INFO(get_logger(), "[%s] Activating from [%s] state...", get_name(), state.label().c_str());
     
     velocity_pub_->on_activate();
+    activated_ = true;
     
     return CallbackReturnT::SUCCESS;
   }
@@ -41,6 +42,7 @@ public:
     RCLCPP_INFO(get_logger(), "[%s] Deactivating from [%s] state...", get_name(), state.label().c_str());
     
     velocity_pub_->on_deactivate();
+    activated_ = false;
     
     return CallbackReturnT::SUCCESS;
   }
@@ -71,17 +73,31 @@ public:
   
   void do_work() 
   {
-    if (velocity_pub_->is_activated()) {
+    if (activated_) { // mejor asi o no
       geometry_msgs::msg::Twist msg;
       msg.linear.x = 0.5;
       msg.angular.z = 0;
       velocity_pub_->publish(msg);
     }
+
+
+
+    /*
+
+    if (no hay pared cerca) {
+      buscar pared
+    }
+
+    if actual_state = (0,0,0) and previous = ()
+    */
+
+
   }
 
 
 private:
   rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::Twist>::SharedPtr velocity_pub_; // Intelligent pointer to a velocity publisher.
+  bool activated_ = false;
 };
 
 int main(int argc, char * argv[])
@@ -89,6 +105,9 @@ int main(int argc, char * argv[])
   rclcpp::init(argc, argv);
 
   auto node = std::make_shared<Follower>();
+
+  node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
   rclcpp::Rate rate(5);
   while (rclcpp::ok()) {
@@ -98,7 +117,6 @@ int main(int argc, char * argv[])
     rate.sleep();
   }
   
-
   rclcpp::shutdown();
 
   return 0;
