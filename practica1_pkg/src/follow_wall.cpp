@@ -77,12 +77,12 @@ public:
   
   void do_work() 
   {
-    if (activated_) { 
+    if (activated_ && trajectory_.size() == 2) { 
       // Follow trajectory
       geometry_msgs::msg::Twist msg;
 
-      float magnitude = trajectory.data[0];
-      float angle = trajectory.data[1];
+      float magnitude = trajectory_[0];
+      float angle = trajectory_[1];
 
       msg.angular.z = -angle * 0.2; 
 
@@ -92,81 +92,69 @@ public:
 
       }
      
-
       velocity_pub_->publish(msg);
     }
-
-
-
-    /*
-
-    if (no hay pared cerca) {
-      buscar pared
-    }
-
-    if actual_state = (0,0,0) and previous = ()
-    */
-
-
   }
 
+  private:
 
-private:
-  void laser_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg){
-    // msg->ranges 665elem, grados de 110 a -110 
-    RCLCPP_INFO(get_logger(), "Angulo 0 tiene una distancia de %f", msg->ranges[332]);
+    void laser_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg){
+      // msg->ranges 665elem, grados de 110 a -110 
+      RCLCPP_INFO(get_logger(), "Angulo 0 tiene una distancia de %f", msg->ranges[332]);
 
-    std::vector<float> distances(std::begin(src), std::end(src)); // Convert ranges to a vector. Now we dont have to know hw many element have. More reutilizable
+      std::vector<float> distances(std::begin(msg->ranges), std::end(msg->ranges)); // Convert ranges to a vector. Now we dont have to know hw many element have. More reutilizable
 
-    std::vector< vector<float> > attraction(distances.size(), vector<int> (2, 0.0));
-    std::vector< vector<float> > repulsion(distances.size(), vector<int> (2, 0.0));
+      std::vector< std::vector<float> > attraction(distances.size(), std::vector<float> (2, 0.0));
+      std::vector< std::vector<float> > repulsion(distances.size(), std::vector<float> (2, 0.0));
 
-    // SERA GLOBAL
-    float distance_to_wall = 1;
+      // SERA GLOBAL
+      float distance_to_wall = 1;
 
-    float result_x = 0.0;
-    float result_y = 0.0;
+      float result_x = 0.0;
+      float result_y = 0.0;
 
-    // For each distance
-    int index = 0;
-    for (float distance: distances) {
+      // For each distance
+      int index = 0;
 
-      float force = 0.0;    .
-      
-      float angle = msg->angle_max - msg->angle_increment * index;
+      for (float distance: distances) {
 
-      if (distance < distance_to_wall) {
-        // Repulse
-        angle += pi; // Opposite direction
-        force = 
-   
-      } else {
-        // Attract
-        force = 
-      }
-      
-      result_x += math.cos(angle)*force;
-      result_y += math.sin(angle)*force;
+        float force = 0.0;    
+        
+        float angle = msg->angle_max - msg->angle_increment * index;
 
-      index ++;  
-    }
-    // Obtain final polar vector falta la fuerza guía
-
-    distance = math.sqrt(pow(x, 2) + pow(y, 2))
-    angle = math.atan2(y, x)
+        if (distance < distance_to_wall) {
+          // Repulse
+          angle += M_PI; // Opposite direction
+          force = 0;
     
-    trajectory = vector<float>{magnitude, angle};
-  }
+        } else {
+          // Attract
+          force = 0;
+        }
+        
+        result_x += std::cos(angle)*force;
+        result_y += std::sin(angle)*force;
 
-  rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::Twist>::SharedPtr velocity_pub_; // Intelligent pointer to a velocity publisher.
-  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
-  rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laser_sub_;
-  bool activated_ = false;
-  vector<float> trajectory_;
+        index ++;  
+      }
+      // Obtain final polar vector falta la fuerza guía
+
+      float polar_magnitude = std::sqrt(std::pow(result_x, 2) + std::pow(result_y, 2));
+      float polar_angle = std::atan2(result_x, result_y);
+
+      trajectory_ = std::vector<float>{polar_magnitude, polar_angle};
+    }
+
+  
+    rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::Twist>::SharedPtr velocity_pub_; // Intelligent pointer to a velocity publisher.
+    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
+    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laser_sub_;
+    bool activated_ = false;
+    std::vector<float> trajectory_;
 };
 
-int main(int argc, char * argv[])
-{
+int main(int argc, char * argv[]) {
+
   rclcpp::init(argc, argv);
 
   auto node = std::make_shared<Follower>();
