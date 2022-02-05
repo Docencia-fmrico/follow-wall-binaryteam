@@ -7,8 +7,14 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
+#include "practica1_pkg/marker_arrow.hpp"
+
 using rcl_interfaces::msg::ParameterType;
 using std::placeholders::_1;
+
+enum Stages {
+  POINT_TO_WALL = 0
+};
 
 class Follower : public rclcpp_lifecycle::LifecycleNode {
 
@@ -73,24 +79,26 @@ public:
     return CallbackReturnT::SUCCESS;
   }
   
-  void do_work() 
-  {
-    if (activated_ && trajectory_.size() == 2) { 
-      // Follow trajectory
-      geometry_msgs::msg::Twist msg;
+  void do_work() {
+   
+    if (activated_) {
 
-      float magnitude = trajectory_[0];
-      float angle = trajectory_[1];
+      if (stage_ == POINT_TO_WALL) {
 
-      msg.angular.z = -angle * 0.2; 
+        int min_element_index = std::min_element(distances_.begin(), distances_.end()) - distances_.begin();
+          
+        float align_wall_angle = angle_max_ - angle_increment * min_element_index;
+        
+        geometry_msgs::msg::Twist msg;
 
-      if (abs(angle) < 0.4) {
+        msg.linear.x = 0.0;
 
-        msg.linear.x = magnitude/1000;
+        msg.angular.z = -align_wall_angle / 8;
 
-      }
-     
-      velocity_pub_->publish(msg);
+        velocity_pub_->publish(msg);
+
+      }      
+
     }
   }
 
@@ -100,55 +108,21 @@ public:
       // msg->ranges 665elem, grados de 110 a -110 
       RCLCPP_INFO(get_logger(), "Angulo 0 tiene una distancia de %f", msg->ranges[332]);
 
-      std::vector<float> distances(std::begin(msg->ranges), std::end(msg->ranges)); // Convert ranges to a vector. Now we dont have to know hw many element have. More reutilizable
+      distances_ = std::vector<float> (std::begin(msg->ranges), std::end(msg->ranges)); // Convert ranges to a vector. Now we dont have to know hw many element have. More reutilizable
+      angle_max_ = msg->angle_max;
+      angle_increment = msg->angle_increment;
 
-      std::vector< std::vector<float> > attraction(distances.size(), std::vector<float> (2, 0.0));
-      std::vector< std::vector<float> > repulsion(distances.size(), std::vector<float> (2, 0.0));
-
-      // SERA GLOBAL
-      float distance_to_wall = 1;
-
-      float result_x = 0.0;
-      float result_y = 0.0;
-
-      // For each distance
-      int index = 0;
-
-      for (float distance: distances) {
-
-        float force = 0.0;    
-        
-        float angle = msg->angle_max - msg->angle_increment * index;
-
-        if (distance < distance_to_wall) {
-          // Repulse
-          angle += M_PI; // Opposite direction
-          force = 0;
-    
-        } else {
-          // Attract
-          force = 0;
-        }
-        
-        result_x += std::cos(angle)*force;
-        result_y += std::sin(angle)*force;
-
-        index ++;  
-      }
-      // Obtain final polar vector falta la fuerza guía
-
-      float polar_magnitude = std::sqrt(std::pow(result_x, 2) + std::pow(result_y, 2));
-      float polar_angle = std::atan2(result_x, result_y);
-
-      trajectory_ = std::vector<float>{polar_magnitude, polar_angle};
     }
-  
+     
     rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::Twist>::SharedPtr velocity_pub_; // Intelligent pointer to a velocity publisher.
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laser_sub_;
     bool activated_ = false;
-    std::vector<float> trajectory_;
-
+    int stage_ = POINT_TO_WALL;
+    std::vector<float> distances_;
+    float angle_max_;
+    float angle_increment;
+    
 };
 
 int main(int argc, char * argv[]) {
