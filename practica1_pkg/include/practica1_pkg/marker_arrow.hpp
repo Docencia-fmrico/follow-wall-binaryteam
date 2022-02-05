@@ -2,31 +2,23 @@
 #define MARKER_ARROW__ARROWMARKERPUBLISHER_HPP_
 
 #include "visualization_msgs/msg/marker.hpp" 
+#include "geometry_msgs/msg/pose.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "std_msgs/msg/string.hpp"
 
-using namespace std::chrono_literals;
+namespace marker_arrow
+{
+	class ArrowMarkerPublisher : public rclcpp::Node{
+		public:
+			//when create the object, this it's created in the position indicated 
+			ArrowMarkerPublisher(geometry_msgs::msg::Pose pose, std::string ns, int id);
+			//action visualization_msgs::msg::Marker::MODIFY
+			void set_marker_values(geometry_msgs::msg::Pose pose, int action);		
+			void publish_marker();	
 
-class ArrowMarkerPublisher : public rclcpp::Node{
-	public:
-		ArrowMarkerPublisher()
-		: Node("marker_arrow_pub_node"), counter(0)
-		{
-			marker_pub_ = create_publisher<visualization_msgs::msg::Marker>("marker", 100);
-		}
-
-		void doWork()
-		{
-				std_msgs::msg::String message;
-				message.data = "Hello, world! " + std::to_string(counter++);
-
-				RCLCPP_INFO(get_logger(), "Publishing [%s]", message.data.c_str());
-
-				pub_->publish(message);
-		}
-
-private:
-  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
-  int counter;
-};
+	private:
+		visualization_msgs::msg::Marker marker_;
+		rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;		
+	};
 }
 #endif //MARKER_ARROW__ARROWMARKERPUBLISHER_HPP_

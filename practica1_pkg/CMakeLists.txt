@@ -21,16 +21,30 @@ set(dependencies
   visualization_msgs
 )
 
+include_directories(include)
+
+add_library(${PROJECT_NAME} SHARED
+  src/marker_arrow.cpp
+)
+ament_target_dependencies(${PROJECT_NAME} ${dependencies})
+
 add_executable(follow_wall src/follow_wall.cpp)
-ament_target_dependencies(follow_wall ${dependencies})
+target_link_libraries(follow_wall ${PROJECT_NAME})
+
+install(DIRECTORY include/
+  DESTINATION include/
+)
 
 install(TARGETS
+  ${PROJECT_NAME}
   follow_wall
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
+ament_export_include_directories(include)
+ament_export_libraries(${PROJECT_NAME})
 ament_export_dependencies(${dependencies})
 
 ament_package()
