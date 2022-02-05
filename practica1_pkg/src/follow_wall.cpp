@@ -77,11 +77,23 @@ public:
   
   void do_work() 
   {
-    if (activated_) { // mejor asi o no
+    if (activated_) { 
+      // Follow trajectory
       geometry_msgs::msg::Twist msg;
-      msg.linear.x = 0.5;
-      msg.angular.z = 0;
-      //velocity_pub_->publish(msg);
+
+      float magnitude = trajectory.data[0];
+      float angle = trajectory.data[1];
+
+      msg.angular.z = -angle * 0.2; 
+
+      if (abs(angle) < 0.4) {
+
+        msg.linear.x = magnitude/1000;
+
+      }
+     
+
+      velocity_pub_->publish(msg);
     }
 
 
@@ -103,12 +115,54 @@ private:
   void laser_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg){
     // msg->ranges 665elem, grados de 110 a -110 
     RCLCPP_INFO(get_logger(), "Angulo 0 tiene una distancia de %f", msg->ranges[332]);
+
+    std::vector<float> distances(std::begin(src), std::end(src)); // Convert ranges to a vector. Now we dont have to know hw many element have. More reutilizable
+
+    std::vector< vector<float> > attraction(distances.size(), vector<int> (2, 0.0));
+    std::vector< vector<float> > repulsion(distances.size(), vector<int> (2, 0.0));
+
+    // SERA GLOBAL
+    float distance_to_wall = 1;
+
+    float result_x = 0.0;
+    float result_y = 0.0;
+
+    // For each distance
+    int index = 0;
+    for (float distance: distances) {
+
+      float force = 0.0;    .
+      
+      float angle = msg->angle_max - msg->angle_increment * index;
+
+      if (distance < distance_to_wall) {
+        // Repulse
+        angle += pi; // Opposite direction
+        force = 
+   
+      } else {
+        // Attract
+        force = 
+      }
+      
+      result_x += math.cos(angle)*force;
+      result_y += math.sin(angle)*force;
+
+      index ++;  
+    }
+    // Obtain final polar vector falta la fuerza guía
+
+    distance = math.sqrt(pow(x, 2) + pow(y, 2))
+    angle = math.atan2(y, x)
+    
+    trajectory = vector<float>{magnitude, angle};
   }
 
   rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::Twist>::SharedPtr velocity_pub_; // Intelligent pointer to a velocity publisher.
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
   rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laser_sub_;
   bool activated_ = false;
+  vector<float> trajectory_;
 };
 
 int main(int argc, char * argv[])
