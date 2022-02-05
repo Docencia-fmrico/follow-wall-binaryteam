@@ -4,14 +4,14 @@
 #include "visualization_msgs/msg/marker.hpp" 
 #include "geometry_msgs/msg/pose.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include <vector>
+#include "std_msgs/msg/string.hpp"
 
 namespace marker_arrow
 {
 	class ArrowMarkerPublisher : public rclcpp::Node{
 		public:
 			//when create the object, this it's created in the position indicated 
-			ArrowMarkerPublisher(geometry_msgs::msg::Pose pose, string ns, int id);
+			ArrowMarkerPublisher(geometry_msgs::msg::Pose pose, std::string ns, int id);
 			//action visualization_msgs::msg::Marker::MODIFY
 			void set_marker_values(geometry_msgs::msg::Pose pose, int action);		
 			void publish_marker();	
