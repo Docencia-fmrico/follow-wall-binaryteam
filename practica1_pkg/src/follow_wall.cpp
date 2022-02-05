@@ -3,7 +3,6 @@
 #include "lifecycle_msgs/msg/state.hpp"
 #include "geometry_msgs/msg/twist.hpp" 
 #include "sensor_msgs/msg/laser_scan.hpp"
-#include "visualization_msgs/msg/marker.hpp" 
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
@@ -18,7 +17,6 @@ public:
   Follower() : rclcpp_lifecycle::LifecycleNode("follower_node") {
    
     velocity_pub_ = create_publisher<geometry_msgs::msg::Twist>("nav_vel", 100);
-    marker_pub_ = create_publisher<visualization_msgs::msg::Marker>("marker", 100);
     laser_sub_ = create_subscription<sensor_msgs::msg::LaserScan>("scan_raw", 100, std::bind(&Follower::laser_callback, this, _1));
   }        
 
@@ -106,7 +104,6 @@ private:
   }
 
   rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::Twist>::SharedPtr velocity_pub_; // Intelligent pointer to a velocity publisher.
-  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
   rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laser_sub_;
   bool activated_ = false;
 };
