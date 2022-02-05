@@ -2,6 +2,8 @@
 
 #include "lifecycle_msgs/msg/state.hpp"
 #include "geometry_msgs/msg/twist.hpp" 
+#include "sensor_msgs/msg/laser_scan.hpp"
+#include "visualization_msgs/msg/marker.hpp" 
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
@@ -16,6 +18,8 @@ public:
   Follower() : rclcpp_lifecycle::LifecycleNode("follower_node") {
    
     velocity_pub_ = create_publisher<geometry_msgs::msg::Twist>("nav_vel", 100);
+    marker_pub_ = create_publisher<visualization_msgs::msg::Marker>("marker", 100);
+    laser_sub_ = create_subscription<sensor_msgs::msg::LaserScan>("scan_raw", 100, std::bind(&Follower::laser_callback, this, _1));
   }        
 
   using CallbackReturnT = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
@@ -77,7 +81,7 @@ public:
       geometry_msgs::msg::Twist msg;
       msg.linear.x = 0.5;
       msg.angular.z = 0;
-      velocity_pub_->publish(msg);
+      //velocity_pub_->publish(msg);
     }
 
 
@@ -96,7 +100,14 @@ public:
 
 
 private:
+  void laser_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg){
+    // msg->ranges 665elem, grados de 110 a -110 
+    RCLCPP_INFO(get_logger(), "Angulo 0 tiene una distancia de %f", msg->ranges[332]);
+  }
+
   rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::Twist>::SharedPtr velocity_pub_; // Intelligent pointer to a velocity publisher.
+  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
+  rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laser_sub_;
   bool activated_ = false;
 };
 
