@@ -13,7 +13,8 @@ using rcl_interfaces::msg::ParameterType;
 using std::placeholders::_1;
 
 enum Stages {
-  POINT_TO_WALL = 0
+  POINT_TO_WALL = 0,
+  GO_TOWARDS_WALL
 };
 
 class Follower : public rclcpp_lifecycle::LifecycleNode {
@@ -86,31 +87,65 @@ public:
       if (stage_ == POINT_TO_WALL) {
 
         int min_element_index = std::min_element(distances_.begin(), distances_.end()) - distances_.begin();
-          
-        float align_wall_angle = angle_max_ - angle_increment * min_element_index;
+
+        float align_wall_angle = angle_min_ + angle_increment_ * min_element_index;
         
         geometry_msgs::msg::Twist msg;
 
         msg.linear.x = 0.0;
 
-        msg.angular.z = -align_wall_angle / 8;
+        msg.angular.z = align_wall_angle /14;
 
+        /*
+        if (std::abs(align_wall_angle) > 0.4) {
+          msg.angular.z = align_wall_angle / 8;
+        } else {
+          msg.angular.z = 0.0;
+        }
+        */
         velocity_pub_->publish(msg);
-
+      
       }      
-
     }
   }
 
   private:
 
+    void smooth_vector(std::vector<float> *pointer) {
+
+      for (int i=0; i < pointer->size(); i++) {
+
+        float sum = 0.0;
+        
+        int iter = 0;
+        for(int j=-10; j < 11; j++) {
+          
+          if (i+j > 0 && i+j < pointer->size()) {
+
+            sum += pointer->at(i+j);
+            iter +=1;
+          }
+        }
+        pointer->at(i) = sum/iter;
+
+      }
+    }
+
     void laser_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg){
       // msg->ranges 665elem, grados de 110 a -110 
-      RCLCPP_INFO(get_logger(), "Angulo 0 tiene una distancia de %f", msg->ranges[332]);
+      
+
+      
 
       distances_ = std::vector<float> (std::begin(msg->ranges), std::end(msg->ranges)); // Convert ranges to a vector. Now we dont have to know hw many element have. More reutilizable
-      angle_max_ = msg->angle_max;
-      angle_increment = msg->angle_increment;
+      float a = distances_[2];
+      smooth_vector(& distances_);
+      float b = distances_[2];
+
+      RCLCPP_INFO(get_logger(), "%f %f", a, b);
+      
+      angle_min_ = msg->angle_min;
+      angle_increment_ = msg->angle_increment;
 
     }
      
@@ -120,8 +155,8 @@ public:
     bool activated_ = false;
     int stage_ = POINT_TO_WALL;
     std::vector<float> distances_;
-    float angle_max_;
-    float angle_increment;
+    float angle_min_;
+    float angle_increment_;
     
 };
 
