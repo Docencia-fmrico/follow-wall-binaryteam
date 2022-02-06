@@ -24,7 +24,7 @@ public:
   Follower() : rclcpp_lifecycle::LifecycleNode("follower_node") {
    
     velocity_pub_ = create_publisher<geometry_msgs::msg::Twist>("nav_vel", 100);
-    laser_sub_ = create_subscription<sensor_msgs::msg::LaserScan>("scan_raw", 100, std::bind(&Follower::laser_callback, this, _1));
+    laser_sub_ = create_subscription<sensor_msgs::msg::LaserScan>("scan_raw", 1, std::bind(&Follower::laser_callback, this, _1));
   }        
 
   using CallbackReturnT = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
@@ -83,70 +83,48 @@ public:
   void do_work() {
    
     if (activated_) {
+      geometry_msgs::msg::Twist msg;
 
       if (stage_ == POINT_TO_WALL) {
+        if (entried_callback){
+          msg.linear.x = 0.0;
+          msg.angular.z = angle_distance_min_ / 16;
+          velocity_pub_->publish(msg); 
 
-        int min_element_index = std::min_element(distances_.begin(), distances_.end()) - distances_.begin();
+          if (angle_distance_min_ < 0.1){
+            stage_ = GO_TOWARDS_WALL;
+          }
+        }
 
-        float align_wall_angle = angle_min_ + angle_increment_ * min_element_index;
-        
-        geometry_msgs::msg::Twist msg;
+      } else if (stage_ == GO_TOWARDS_WALL){
 
-        msg.linear.x = 0.0;
+        RCLCPP_INFO(get_logger(), "aqui %f", get_name(), distance_min_);
 
-        msg.angular.z = align_wall_angle /14;
-
-        /*
-        if (std::abs(align_wall_angle) > 0.4) {
-          msg.angular.z = align_wall_angle / 8;
+        if (distance_min_ > 0.1){
+          msg.linear.x = 0.2;
+          msg.angular.z = 0.0;
         } else {
+          msg.linear.x = 0.0;
           msg.angular.z = 0.0;
         }
-        */
-        velocity_pub_->publish(msg);
-      
-      }      
+        velocity_pub_->publish(msg); 
+      }
+  
     }
   }
 
   private:
-
-    void smooth_vector(std::vector<float> *pointer) {
-
-      for (int i=0; i < pointer->size(); i++) {
-
-        float sum = 0.0;
-        
-        int iter = 0;
-        for(int j=-10; j < 11; j++) {
-          
-          if (i+j > 0 && i+j < pointer->size()) {
-
-            sum += pointer->at(i+j);
-            iter +=1;
-          }
-        }
-        pointer->at(i) = sum/iter;
-
-      }
-    }
-
     void laser_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg){
-      // msg->ranges 665elem, grados de 110 a -110 
-      
+      // msg->ranges 666elem, grados de 110 a -110 
+      for (int i = 0; i < 666; i++){
+        if (msg->ranges[i] < distance_min_){
+          distance_min_ = msg->ranges[i];
+          angle_distance_min_ = msg->angle_min + msg->angle_increment * i;
+        }
+      }
 
-      
-
-      distances_ = std::vector<float> (std::begin(msg->ranges), std::end(msg->ranges)); // Convert ranges to a vector. Now we dont have to know hw many element have. More reutilizable
-      float a = distances_[2];
-      smooth_vector(& distances_);
-      float b = distances_[2];
-
-      RCLCPP_INFO(get_logger(), "%f %f", a, b);
-      
-      angle_min_ = msg->angle_min;
-      angle_increment_ = msg->angle_increment;
-
+      RCLCPP_INFO(get_logger(), "laser %f", get_name(), distance_min_);
+      entried_callback = true;
     }
      
     rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::Twist>::SharedPtr velocity_pub_; // Intelligent pointer to a velocity publisher.
@@ -154,10 +132,10 @@ public:
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laser_sub_;
     bool activated_ = false;
     int stage_ = POINT_TO_WALL;
-    std::vector<float> distances_;
-    float angle_min_;
-    float angle_increment_;
-    
+  
+    float distance_min_ = 25;
+    float angle_distance_min_;
+    bool entried_callback = false;
 };
 
 int main(int argc, char * argv[]) {
