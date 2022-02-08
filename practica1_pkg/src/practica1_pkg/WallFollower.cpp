@@ -55,14 +55,14 @@ CallbackReturnT WallFollower::on_error(const rclcpp_lifecycle::State& state) {
 void WallFollower::turn_left() {
   geometry_msgs::msg::Twist msg;
   msg.linear.x = 0.0;
-  msg.angular.z = 0.2;
+  msg.angular.z = 0.5;
   velocity_pub_->publish(msg); 
 }
 
 void WallFollower::move_in_a_curve() {
   geometry_msgs::msg::Twist msg;
-  msg.linear.x = 0.15;
-  msg.angular.z = -0.05;
+  msg.linear.x = 0.25;
+  msg.angular.z = -0.3;
   velocity_pub_->publish(msg);
 }
 
@@ -81,8 +81,8 @@ void WallFollower::laser_callback(const sensor_msgs::msg::LaserScan::SharedPtr m
 
   //int CONE_ANGLE = 0.5;
 
-  int cone_start = 180; //int(((CONE_ANGLE/2) - msg->angle_min)/ msg->angle_increment) ;
-  int cone_end = 486; //int(((-CONE_ANGLE/2) - msg->angle_min)/ msg->angle_increment) ;
+  int cone_start = 120; //int(((CONE_ANGLE/2) - msg->angle_min)/ msg->angle_increment) ;
+  int cone_end = 506; //int(((-CONE_ANGLE/2) - msg->angle_min)/ msg->angle_increment) ;
 
   float min_distance = 25;
   for (int i = cone_start; i < cone_end; i++){
