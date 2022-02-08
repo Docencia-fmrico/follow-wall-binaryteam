@@ -84,7 +84,7 @@ public:
    
     if (activated_) {
       geometry_msgs::msg::Twist msg;
-
+      ///funcion alto nivel y timers
       if (stage_ == POINT_TO_WALL) {
         if (entried_callback){
           msg.linear.x = 0.0;
@@ -100,7 +100,7 @@ public:
 
         RCLCPP_INFO(get_logger(), "aqui %f", get_name(), distance_min_);
 
-        if (distance_min_ > 0.1){
+        if (distance_min_ > 0.25){
           msg.linear.x = 0.2;
           msg.angular.z = 0.0;
         } else {
@@ -148,6 +148,7 @@ int main(int argc, char * argv[]) {
   node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
   rclcpp::Rate rate(5);
+  ////////////////////////////////////////////////
   while (rclcpp::ok()) {
     node->do_work();
 

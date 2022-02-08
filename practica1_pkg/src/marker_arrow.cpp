@@ -5,7 +5,7 @@
 #include "practica1_pkg/marker_arrow.hpp"
 
 namespace marker_arrow
-{
+{   //marker_array
     ArrowMarkerPublisher::ArrowMarkerPublisher(geometry_msgs::msg::Pose pose, std::string ns, int id)
     : Node("marker_arrow_pub_node")
     {
@@ -13,7 +13,7 @@ namespace marker_arrow
         set_marker_values(pose, visualization_msgs::msg::Marker::ADD);
 
         marker_.header.frame_id = "/base_laser_link";
-        //marker_.header.stamp = ros::Time::;
+        marker_.header.stamp = now();
         marker_.ns = ns;
         marker_.id = id;
         marker_.type = visualization_msgs::msg::Marker::ARROW;
@@ -31,7 +31,6 @@ namespace marker_arrow
         marker_.color.g = 1.0f;
         marker_.color.b = 0.0f;
         marker_.color.a = 1.0;
-        //marker_.lifetime = ros::Duration();
     }
 
     void ArrowMarkerPublisher::publish_marker(){
