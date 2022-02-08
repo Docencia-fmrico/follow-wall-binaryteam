@@ -2,7 +2,7 @@
 
 WallFollower::WallFollower() : rclcpp_lifecycle::LifecycleNode("follower_node") {
   velocity_pub_ = create_publisher<geometry_msgs::msg::Twist>("nav_vel", 100);
-  laser_sub_ = create_subscription<sensor_msgs::msg::LaserScan>("scan_raw", 1, std::bind(&Follower::laser_callback, this, _1));
+  laser_sub_ = create_subscription<sensor_msgs::msg::LaserScan>("scan_raw", 1, std::bind(&WallFollower::laser_callback, this, _1));
 }
 
 using CallbackReturnT = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
@@ -17,7 +17,7 @@ CallbackReturnT WallFollower::on_activate(const rclcpp_lifecycle::State& state) 
   RCLCPP_INFO(get_logger(), "[%s] Activating from [%s] state...", get_name(), state.label().c_str());
 
   velocity_pub_->on_activate();
-  timer_ = create_wall_timer{50ms, std::bind(&WallFollower::behaviour, this)};
+  timer_ = create_wall_timer(50ms, std::bind(&WallFollower::behaviour, this));
 
   return CallbackReturnT::SUCCESS;
 }
@@ -61,8 +61,8 @@ void WallFollower::turn_right() {
 
 void WallFollower::move_in_a_curve() {
   geometry_msgs::msg::Twist msg;
-  msg.linear.x = 0.2;
-  msg.angular.z = -0.01;
+  msg.linear.x = 0.15;
+  msg.angular.z = -0.05;
   velocity_pub_->publish(msg);
 }
 
@@ -81,8 +81,13 @@ void WallFollower::laser_callback(const sensor_msgs::msg::LaserScan::SharedPtr m
   int cone_start = int(((CONE_ANGLE/2) - msg->angle_min)/ msg->angle_increment) ;
   int cone_end = int(((-CONE_ANGLE/2) - msg->angle_min)/ msg->angle_increment) ;
 
-  float min_distance = *std::min_element(msg->ranges[cone_start], msg->ranges[cone_end]);
-
+  float min_distance = 25;
+  for (int i = cone_start; i < cone_end; i++){
+    if (msg->ranges[i] < min_distance){
+      min_distance = msg->ranges[i];
+    }
+  }
+  
   float OBSTACLE_DISTANCE = 0.30;
 
   if (min_distance < OBSTACLE_DISTANCE) {

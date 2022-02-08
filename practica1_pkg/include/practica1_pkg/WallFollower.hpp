@@ -7,8 +7,6 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
-#include "practica1_pkg/marker_arrow.hpp"
-
 using rcl_interfaces::msg::ParameterType;
 using std::placeholders::_1;
 using namespace std::chrono_literals;
@@ -50,7 +48,7 @@ protected:
 
 private:
   rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::Twist>::SharedPtr velocity_pub_; // Intelligent pointer to a velocity publisher.
-  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
+  //rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
   rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laser_sub_;
   rclcpp::TimerBase::SharedPtr timer_;
   State state_ = FREE_WAY;
