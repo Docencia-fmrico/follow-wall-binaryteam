@@ -1,7 +1,10 @@
+#ifndef PRACTICA1_PKG__WALLFOLLOWER_HPP_
+#define PRACTICA1_PKG__WALLFOLLOWER_HPP_
+
 #include <memory>
 
 #include "lifecycle_msgs/msg/state.hpp"
-#include "geometry_msgs/msg/twist.hpp" 
+#include "geometry_msgs/msg/twist.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
 
 #include "rclcpp/rclcpp.hpp"
@@ -12,17 +15,14 @@ using std::placeholders::_1;
 using namespace std::chrono_literals;
 
 class WallFollower : public rclcpp_lifecycle::LifecycleNode {
-
   enum State {
     OBSTACLE = 0,
     FREE_WAY
   };
 
-
 public:
-  
-  WallFollower(); 
-       
+  WallFollower();
+
   using CallbackReturnT = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
   CallbackReturnT on_configure(const rclcpp_lifecycle::State & state);
@@ -47,10 +47,10 @@ protected:
   void laser_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg);
 
 private:
-  rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::Twist>::SharedPtr velocity_pub_; // Intelligent pointer to a velocity publisher.
-  //rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
+  // Intelligent pointer to a velocity publisher.
+  rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::Twist>::SharedPtr velocity_pub_;
   rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laser_sub_;
   rclcpp::TimerBase::SharedPtr timer_;
   State state_ = FREE_WAY;
-};  
-
+};
+#endif  // PRACTICA1_PKG__WALLFOLLOWER_HPP_
