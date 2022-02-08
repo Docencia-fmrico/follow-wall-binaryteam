@@ -39,7 +39,7 @@ public:
 
   void behaviour();
 
-  void turn_right();
+  void turn_left();
 
   void move_in_a_curve();
 

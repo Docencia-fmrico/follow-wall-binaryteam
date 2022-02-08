@@ -52,10 +52,10 @@ CallbackReturnT WallFollower::on_error(const rclcpp_lifecycle::State& state) {
   return CallbackReturnT::SUCCESS;
 }
 
-void WallFollower::turn_right() {
+void WallFollower::turn_left() {
   geometry_msgs::msg::Twist msg;
   msg.linear.x = 0.0;
-  msg.angular.z = -0.1;
+  msg.angular.z = 0.2;
   velocity_pub_->publish(msg); 
 }
 
@@ -67,19 +67,22 @@ void WallFollower::move_in_a_curve() {
 }
 
 void WallFollower::behaviour() {
+  
   if (state_ == OBSTACLE) {
-    turn_right();
+    RCLCPP_INFO(get_logger(), "STATE: OBSTACLE");
+    turn_left();
   } else if (state_ == FREE_WAY) {
+    RCLCPP_INFO(get_logger(), "STATE: FREE_WAY");
     move_in_a_curve();
   }
 }
 
 void WallFollower::laser_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg) {
 
-  int CONE_ANGLE = 0.1;
+  //int CONE_ANGLE = 0.5;
 
-  int cone_start = int(((CONE_ANGLE/2) - msg->angle_min)/ msg->angle_increment) ;
-  int cone_end = int(((-CONE_ANGLE/2) - msg->angle_min)/ msg->angle_increment) ;
+  int cone_start = 180; //int(((CONE_ANGLE/2) - msg->angle_min)/ msg->angle_increment) ;
+  int cone_end = 486; //int(((-CONE_ANGLE/2) - msg->angle_min)/ msg->angle_increment) ;
 
   float min_distance = 25;
   for (int i = cone_start; i < cone_end; i++){
@@ -88,7 +91,7 @@ void WallFollower::laser_callback(const sensor_msgs::msg::LaserScan::SharedPtr m
     }
   }
   
-  float OBSTACLE_DISTANCE = 0.30;
+  float OBSTACLE_DISTANCE = 0.40;
 
   if (min_distance < OBSTACLE_DISTANCE) {
     state_ = OBSTACLE;
