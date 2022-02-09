@@ -12,16 +12,13 @@
 > HEy
 
 Ejemplo de codigo:
-<html>
-    <head>
-        <title>To see it behaviour execute this</title>
 
+To see it behaviour execute this
+```
         ros2 launch br2_tiago sim.launch.py
-
         ros2 run practica1_pkg follow_wall_main
-    </head>
-</html>
-
+```
+You must clone repo of fmrico github: planning_cognitive_systems_course to execute first line. 
 #### Manteiners
-<p.colmenar.2019@alumnos.urjc.es/> 
-<v.perezb.2019@alumnos.urjc.es/>
+<p.colmenar.2019@alumnos.urjc.es>\
+<v.perezb.2019@alumnos.urjc.es>
