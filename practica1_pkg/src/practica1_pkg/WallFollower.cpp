@@ -14,6 +14,9 @@
 
 #include "practica1_pkg/WallFollower.hpp"
 
+using std::placeholders::_1;
+using namespace std::chrono_literals;
+
 WallFollower::WallFollower()
 : rclcpp_lifecycle::LifecycleNode("follower_node")
 {

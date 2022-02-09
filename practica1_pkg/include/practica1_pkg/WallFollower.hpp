@@ -25,8 +25,6 @@
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
 using rcl_interfaces::msg::ParameterType;
-using std::placeholders::_1;
-using std::chrono_literals;
 
 class WallFollower : public rclcpp_lifecycle::LifecycleNode
 {
