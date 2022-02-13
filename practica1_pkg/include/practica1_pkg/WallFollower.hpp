@@ -16,7 +16,7 @@
 #define PRACTICA1_PKG__WALLFOLLOWER_HPP_
 
 #include <memory>
-
+#include <vector>
 #include "lifecycle_msgs/msg/state.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
@@ -59,6 +59,7 @@ public:
 
 protected:
   void laser_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg);
+  float min_distance_in_the_cone(std::vector<float> ranges, int cone_start, int cone_end);
 
 private:
   // Intelligent pointer to a velocity publisher.

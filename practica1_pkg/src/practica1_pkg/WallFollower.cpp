@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
+#include  <vector>
 #include "practica1_pkg/WallFollower.hpp"
 
 using std::placeholders::_1;
@@ -111,17 +111,25 @@ void WallFollower::behaviour()
   }
 }
 
+float WallFollower::min_distance_in_the_cone(
+  std::vector<float> ranges, int cone_start, int cone_end)
+{
+  float min_distance = 25;
+  for (int i = cone_start; i < cone_end; i++) {
+    if (ranges[i] < min_distance) {
+      min_distance = ranges[i];
+    }
+  }
+  return min_distance;
+}
+
 void WallFollower::laser_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg)
 {
   int cone_start = 120;
   int cone_end = 506;
 
-  float min_distance = 25;
-  for (int i = cone_start; i < cone_end; i++) {
-    if (msg->ranges[i] < min_distance) {
-      min_distance = msg->ranges[i];
-    }
-  }
+  float min_distance = min_distance_in_the_cone(msg->ranges, cone_start, cone_end);
+
   float OBSTACLE_DISTANCE = 0.40;
 
   if (min_distance < OBSTACLE_DISTANCE) {
