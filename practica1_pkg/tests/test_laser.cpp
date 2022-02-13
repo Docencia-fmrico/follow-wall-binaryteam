@@ -49,11 +49,23 @@ TEST(test_laser, test_laser_min_in_cone)
   int cone_start = 120;
   int cone_end = 506;
   std::vector<float> ranges(666, 25);
-  // Number out of cone, must not be the minimum
+
   ranges.at(120) = 0.05;
   ranges.at(500) = 0.09;
   ranges.at(150) = 0.05;
   ASSERT_FLOAT_EQ(node->min_distance_in_the_cone_test(ranges, cone_start, cone_end), 0.05);
+}
+
+TEST(test_laser, support_infinity)
+{
+  auto node = std::make_shared<WallFollowerTest>();
+
+  int cone_start = 120;
+  int cone_end = 506;
+  std::vector<float> ranges(666, std::numeric_limits<float>::infinity());
+
+  ranges.at(150) = 0.5;
+  ASSERT_FLOAT_EQ(node->min_distance_in_the_cone_test(ranges, cone_start, cone_end), 0.5);
 }
 
 int main(int argc, char ** argv)
