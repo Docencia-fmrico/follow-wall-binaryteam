@@ -42,6 +42,7 @@ CallbackReturnT WallFollower::on_activate(const rclcpp_lifecycle::State & state)
 
   velocity_pub_->on_activate();
   timer_ = create_wall_timer(50ms, std::bind(&WallFollower::behaviour, this));
+  last_obstacle_ts_ = now();
 
   return CallbackReturnT::SUCCESS;
 }
@@ -92,12 +93,29 @@ void WallFollower::turn_left()
   velocity_pub_->publish(msg);
 }
 
-void WallFollower::move_in_a_curve()
+geometry_msgs::msg::Twist WallFollower::getCurvature()
 {
   geometry_msgs::msg::Twist msg;
-  msg.linear.x = 0.25;
-  msg.angular.z = -0.3;
-  velocity_pub_->publish(msg);
+
+  float default_linear = 0.25;
+  float default_angular = -0.3;
+
+  auto time_without_converge = now() - last_obstacle_ts_;
+
+  // Change curve because of the time
+  msg.linear.x = default_linear;
+
+  if (time_without_converge.seconds() > 16) {
+    msg.angular.z = default_angular + 0.2;
+  } else {
+    msg.angular.z = default_angular;
+  }
+  return msg;
+}
+
+void WallFollower::move_in_a_curve()
+{
+  velocity_pub_->publish(getCurvature());
 }
 
 void WallFollower::behaviour()
@@ -134,6 +152,7 @@ void WallFollower::laser_callback(const sensor_msgs::msg::LaserScan::SharedPtr m
 
   if (min_distance < OBSTACLE_DISTANCE) {
     state_ = OBSTACLE;
+    last_obstacle_ts_ = now();
   } else {
     state_ = FREE_WAY;
   }

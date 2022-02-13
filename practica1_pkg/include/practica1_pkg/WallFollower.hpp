@@ -57,6 +57,8 @@ public:
 
   void move_in_a_curve();
 
+  geometry_msgs::msg::Twist getCurvature();
+
 protected:
   void laser_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg);
   float min_distance_in_the_cone(std::vector<float> ranges, int cone_start, int cone_end);
@@ -67,5 +69,6 @@ private:
   rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laser_sub_;
   rclcpp::TimerBase::SharedPtr timer_;
   State state_ = FREE_WAY;
+  rclcpp::Time last_obstacle_ts_;
 };
 #endif  // PRACTICA1_PKG__WALLFOLLOWER_HPP_
