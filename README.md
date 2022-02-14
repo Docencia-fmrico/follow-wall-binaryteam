@@ -1,13 +1,14 @@
 
-![Tiago logo](/logo.png)
+![Tiago logo](images/logo.png)
 # Follow Wall Algorithm
 
 ## Algorithm explanation
-Consists in a simple curvature algorithm. As simple as: If there is something at front, turn LEFT since there is some space to go. Then go with a curve trajectory due to converge at the wall. This can sort every obstacle and wall shapes. Is simply and robust. 
+Consists in a simple curvature algorithm. As simple as: If there is something at front, turn LEFT since there is some space to go. Then it follows a curved path until it converges on a wall. If for 16 seconds it fails to converge on a wall, it automatically increases the amplitude of the curve in order to converge.
+This can avoid every obstacle and wall shapes. It's simply and robust. 
 
 ## Video demostration
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/dGz5tjBB1bg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+[![Watch the video](images/yt_for_md.png)](https://www.youtube.com/watch?v=dGz5tjBB1bg)
 
 ## How to use
 
