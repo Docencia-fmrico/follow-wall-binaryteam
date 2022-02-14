@@ -28,6 +28,12 @@ public:
   {
     return min_distance_in_the_cone(ranges, cone_start, cone_end);
   }
+
+  void set_obstacle_timestamp_seconds(int seconds)
+  {
+    rclcpp::Time fake_time(now().seconds() - seconds, 0, RCL_ROS_TIME);
+    last_obstacle_ts_ = fake_time;
+  }
 };
 
 TEST(test_laser, test_laser_min_out_cone)
@@ -67,6 +73,27 @@ TEST(test_laser, support_infinity)
   ranges.at(150) = 0.5;
   ASSERT_FLOAT_EQ(node->min_distance_in_the_cone_test(ranges, cone_start, cone_end), 0.5);
 }
+
+TEST(test_curvature, no_converging_at_t0)
+{
+  auto node = std::make_shared<WallFollowerTest>();
+
+  node->set_obstacle_timestamp_seconds(0);
+  geometry_msgs::msg::Twist msg = node->getCurvature();
+
+  ASSERT_FLOAT_EQ(msg.angular.z, -0.3);
+}
+
+TEST(test_curvature, converging_at_correct_time)
+{
+  auto node = std::make_shared<WallFollowerTest>();
+
+  node->set_obstacle_timestamp_seconds(17);
+  geometry_msgs::msg::Twist msg = node->getCurvature();
+
+  ASSERT_FLOAT_EQ(msg.angular.z, -0.1);
+}
+
 
 int main(int argc, char ** argv)
 {
