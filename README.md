@@ -62,5 +62,3 @@ You must clone repo of fmrico github: planning_cognitive_systems_course to execu
 
 [![GitHub Action
 Status](https://github.com/Docencia-fmrico/follow-wall-binaryteam/workflows/main/badge.svg)](https://github.com/Docencia-fmrico/follow-wall-binaryteam)
-
-# folllow_wall
