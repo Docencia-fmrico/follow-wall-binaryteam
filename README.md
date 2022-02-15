@@ -54,7 +54,7 @@ To see it behaviour execute this
 
 
 You must clone repo of fmrico github: planning_cognitive_systems_course to execute first line. 
-#### Manteiners
+#### Mantainers
 <p.colmenar.2019@alumnos.urjc.es>\
 <v.perezb.2019@alumnos.urjc.es>
 
