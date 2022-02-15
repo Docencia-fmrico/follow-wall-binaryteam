@@ -73,7 +73,7 @@ private:
   const float CONE_ANGLE_ = 2.44;  // Front vision cone angle: 140 degrees
   const float OBSTACLE_DISTANCE_ = 0.40;  // Min distance at vision cone considered obstacle
   // Curvature params
-  const float DEFAULT_LINEAR_ = 0.25; 
+  const float DEFAULT_LINEAR_ = 0.25;
   const float DEFAULT_ANGULAR_ = -0.3;
 };
 #endif  // PRACTICA1_PKG__WALLFOLLOWER_HPP_
