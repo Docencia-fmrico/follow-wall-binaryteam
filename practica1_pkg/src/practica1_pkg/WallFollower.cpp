@@ -11,7 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include  <vector>
+#include <vector>
+#include <limits>
 #include "practica1_pkg/WallFollower.hpp"
 
 using std::placeholders::_1;
@@ -41,7 +42,7 @@ CallbackReturnT WallFollower::on_activate(const rclcpp_lifecycle::State & state)
     get_logger(), "[%s] Activating from [%s] state...", get_name(), state.label().c_str());
 
   velocity_pub_->on_activate();
-  timer_ = create_wall_timer(50ms, std::bind(&WallFollower::behaviour, this));
+  timer_ = create_wall_timer(25ms, std::bind(&WallFollower::behaviour, this));
   last_obstacle_ts_ = now();
 
   return CallbackReturnT::SUCCESS;
@@ -93,29 +94,26 @@ void WallFollower::turn_left()
   velocity_pub_->publish(msg);
 }
 
-geometry_msgs::msg::Twist WallFollower::getCurvature()
+geometry_msgs::msg::Twist WallFollower::get_curvature()
 {
   geometry_msgs::msg::Twist msg;
-
-  float default_linear = 0.25;
-  float default_angular = -0.3;
 
   auto time_without_converge = now() - last_obstacle_ts_;
 
   // Change curve because of the time
-  msg.linear.x = default_linear;
+  msg.linear.x = DEFAULT_LINEAR_;
 
   if (time_without_converge.seconds() > 16) {
-    msg.angular.z = default_angular + 0.2;
+    msg.angular.z = DEFAULT_ANGULAR_ + 0.2;
   } else {
-    msg.angular.z = default_angular;
+    msg.angular.z = DEFAULT_ANGULAR_;
   }
   return msg;
 }
 
 void WallFollower::move_in_a_curve()
 {
-  velocity_pub_->publish(getCurvature());
+  velocity_pub_->publish(get_curvature());
 }
 
 void WallFollower::behaviour()
@@ -132,7 +130,7 @@ void WallFollower::behaviour()
 float WallFollower::min_distance_in_the_cone(
   std::vector<float> ranges, int cone_start, int cone_end)
 {
-  float min_distance = 25;
+  float min_distance = std::numeric_limits<float>::infinity();
   for (int i = cone_start; i < cone_end; i++) {
     if (ranges[i] < min_distance) {
       min_distance = ranges[i];
@@ -143,14 +141,12 @@ float WallFollower::min_distance_in_the_cone(
 
 void WallFollower::laser_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg)
 {
-  int cone_start = 120;
-  int cone_end = 506;
+  int cone_start = ((-CONE_ANGLE_ / 2) - msg->angle_min) / msg->angle_increment;
+  int cone_end = ((CONE_ANGLE_ / 2) - msg->angle_min) / msg->angle_increment;
 
   float min_distance = min_distance_in_the_cone(msg->ranges, cone_start, cone_end);
 
-  float OBSTACLE_DISTANCE = 0.40;
-
-  if (min_distance < OBSTACLE_DISTANCE) {
+  if (min_distance < OBSTACLE_DISTANCE_) {
     state_ = OBSTACLE;
     last_obstacle_ts_ = now();
   } else {
