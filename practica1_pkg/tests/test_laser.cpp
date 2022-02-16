@@ -81,7 +81,7 @@ TEST(test_curvature, no_converging_at_t0)
   node->set_obstacle_timestamp_seconds(0);
   geometry_msgs::msg::Twist msg = node->get_curvature();
 
-  ASSERT_FLOAT_EQ(msg.angular.z, -0.3);
+  ASSERT_FLOAT_EQ(msg.angular.z, -0.5);
 }
 
 TEST(test_curvature, converging_at_correct_time)
@@ -91,7 +91,7 @@ TEST(test_curvature, converging_at_correct_time)
   node->set_obstacle_timestamp_seconds(17);
   geometry_msgs::msg::Twist msg = node->get_curvature();
 
-  ASSERT_FLOAT_EQ(msg.angular.z, -0.1);
+  ASSERT_FLOAT_EQ(msg.angular.z, -0.3);
 }
 
 

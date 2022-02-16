@@ -13,6 +13,7 @@
 // limitations under the License.
 #include <vector>
 #include <limits>
+#include <algorithm>
 #include "practica1_pkg/WallFollower.hpp"
 
 using std::placeholders::_1;
@@ -21,9 +22,9 @@ using namespace std::chrono_literals;
 WallFollower::WallFollower()
 : rclcpp_lifecycle::LifecycleNode("follower_node")
 {
-  velocity_pub_ = create_publisher<geometry_msgs::msg::Twist>("nav_vel", 100);
+  velocity_pub_ = create_publisher<geometry_msgs::msg::Twist>("/commands/velocity", 100);
   laser_sub_ = create_subscription<sensor_msgs::msg::LaserScan>(
-    "scan_raw", 1, std::bind(&WallFollower::laser_callback, this, _1));
+    "/scan", 1, std::bind(&WallFollower::laser_callback, this, _1));
 }
 
 using CallbackReturnT = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
@@ -141,11 +142,14 @@ float WallFollower::min_distance_in_the_cone(
 
 void WallFollower::laser_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg)
 {
-  int cone_start = ((-CONE_ANGLE_ / 2) - msg->angle_min) / msg->angle_increment;
-  int cone_end = ((CONE_ANGLE_ / 2) - msg->angle_min) / msg->angle_increment;
+  int cone_right = ((CONE_ANGLE_ / 2) - msg->angle_min) / msg->angle_increment;
+  int cone_left = ((-CONE_ANGLE_ / 2) - msg->angle_min) / msg->angle_increment;
 
-  float min_distance = min_distance_in_the_cone(msg->ranges, cone_start, cone_end);
+  float min_right = min_distance_in_the_cone(msg->ranges, 0, cone_right);
+  float min_left = min_distance_in_the_cone(msg->ranges, cone_left, 360);
+  float min_distance = std::min(min_right, min_left);
 
+  std::cout << "cone_right: " << cone_right << " cone_left: " << cone_left << std::endl;
   if (min_distance < OBSTACLE_DISTANCE_) {
     state_ = OBSTACLE;
     last_obstacle_ts_ = now();
