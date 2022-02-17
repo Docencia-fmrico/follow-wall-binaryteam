@@ -9,6 +9,15 @@ This can avoid every obstacle and wall shapes. It's simply and robust.
 
 [![Watch the video](images/yt_for_md.png)](https://www.youtube.com/watch?v=dGz5tjBB1bg)
 
+## Running on Kobuki with rplidar2
+To run on Kobuki robot you must change to kobuki_rplidar2 branch. 
+
+[![Watch the video](images/lets_take_a_walk.png)](https://youtu.be/w3kmItsOkaQ)
+
+[![Watch the video](images/following_wall.png)](https://youtu.be/q3IsOkEe32M)
+
+[![Watch the video](images/complex_wall_shape.png)](https://youtu.be/7WgDnxEBMi0)
+
 ## How to use
 
 Create the node:
@@ -54,6 +63,7 @@ To see it behaviour execute this
 
 
 You must clone repo of fmrico github: planning_cognitive_systems_course to execute first line. 
+
 #### Mantainers
 <p.colmenar.2019@alumnos.urjc.es>\
 <v.perezb.2019@alumnos.urjc.es>
